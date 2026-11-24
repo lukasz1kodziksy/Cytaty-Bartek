@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bartek — Teksty i Spotify</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top, #1e1b4b, #09090b 70%);
+            min-height: 100vh;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+        }
+        .pop-in {
+            animation: popIn 0.25s ease-out;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: translateY(6px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+    </style>
+</head>
+<body class="text-white flex items-center justify-center p-4">
+    <main class="glass w-full max-w-xl rounded-3xl p-6 sm:p-8 text-center shadow-2xl space-y-6">
+        <div>
+            <h1 class="text-2xl sm:text-4xl font-black tracking-tight text-amber-300">
+                Bartek — Losowanie Tekstów 🦇
+            </h1>
+            <p class="text-xs sm:text-sm text-zinc-300 mt-1">
+                Kliknij kartę lub zdjęcie, żeby wylosować kolejny tekst
+            </p>
+        </div>
+
+        <!-- Opcjonalny podgląd zdjęcia (możesz wgrać własne pliki obok index.html lub wybrać z dysku) -->
+        <div class="space-y-3">
+            <div id="photoCard" class="relative mx-auto w-56 h-56 sm:w-64 sm:h-64 rounded-2xl overflow-hidden border-2 border-amber-400/60 bg-slate-900 flex items-center justify-center cursor-pointer shadow-lg transition-transform active:scale-95">
+                <img id="bartekImg" src="bartek1.jpg" alt="Bartek" class="w-full h-full object-cover hidden">
+                <div id="photoPlaceholder" class="p-4 text-center space-y-1">
+                    <div class="text-4xl">🦇</div>
+                    <div class="text-xs font-bold text-amber-200">Brak pliku bartek1.jpg</div>
+                    <div class="text-[11px] text-zinc-400">Kliknij tutaj, aby wylosować tekst albo dodaj własne zdjęcia niżej</div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center gap-2">
+                <label class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-xs font-semibold cursor-pointer transition">
+                    📷 Dodaj zdjęcia z urządzenia
+                    <input id="photoInput" type="file" accept="image/*" multiple class="hidden">
+                </label>
+                <button id="resetPhotosBtn" type="button" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 cursor-pointer transition">
+                    Wyczyść
+                </button>
+            </div>
+        </div>
+
+        <!-- Tekst wyświetlany po kliknięciu -->
+        <div id="quoteBox" class="rounded-2xl bg-slate-950/65 border border-amber-400/30 p-5 min-h-[96px] flex items-center justify-center cursor-pointer transition hover:border-amber-400/70">
+            <p id="quoteText" class="text-base sm:text-lg font-bold text-amber-100 pop-in">
+                „W dzień strażak, w nocy Batman, a na studiach legenda!” 🚒🦇
+            </p>
+        </div>
+
+        <button id="nextQuoteBtn" type="button" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-sm shadow-lg cursor-pointer transition active:scale-[0.99]">
+            Losuj kolejny tekst 🎲
+        </button>
+
+        <!-- Odtwarzacz Spotify — podmień ID utworu/playlisty w src na swój -->
+        <div class="pt-2 border-t border-white/10 text-left">
+            <p class="text-[11px] uppercase tracking-wider text-zinc-400 font-semibold mb-2">
+                Muzyka ze Spotify
+            </p>
+            <iframe
+                id="spotifyFrame"
+                style="border-radius:12px"
+                src="https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT?utm_source=generator&theme=0"
+                width="100%"
+                height="152"
+                frameBorder="0"
+                allowfullscreen=""
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy">
+            </iframe>
+        </div>
+    </main>
+
+    <script>
+        const TEXTS = [
+            "„W dzień strażak, w nocy Batman, a na studiach legenda!” 🚒🦇",
+            "„Komp Bartka ciągnie Arkham Knighta na Ultra i ogrzewa pół osiedla!” 🖥️🔥",
+            "„Strażak Bartek gasi pożary szybciej niż sesję egzaminacyjną!” 🧯🎓",
+            "„Jak Bartek odpala swojego kompa, w elektrowni biją brawo!” ⚡💻",
+            "„Batman ma Batmobil, a Bartek wóz strażacki i potężnego PC-ta!” 🚒🦇",
+            "„Chłodzenie w kompie Bartka chodzi ciszej niż Batman w Gotham!” ❄️🦇",
+            "„Sesja na studiach? Dla strażaka z Arkham to zwykła rozgrzewka!” 📚💪",
+            "„Jedyny przeciwnik, przed którym Batman ma wyzwanie: Rafał Brzózka!” 🌳🤧",
+            "„Bartek ma w pasie taktycznym Batwingi, hak i żelazną kondycję!” 🦇💪",
+            "„Po każdej udanej akcji w Gotham najlepsza jest świeża bułka!” 🥖😎",
+            "„Nienawidzę brzóz — dobrze, że w końcu wylądował w doniczce!” 🪴🦇"
+        ];
+
+        // Możesz wpisać tu własne nazwy plików wrzuconych obok index.html na GitHubie:
+        const REPO_PHOTOS = ["bartek1.jpg", "bartek2.jpg", "bartek3.jpg"];
+
+        const quoteBox = document.getElementById("quoteBox");
+        const quoteText = document.getElementById("quoteText");
+        const nextQuoteBtn = document.getElementById("nextQuoteBtn");
+        const photoCard = document.getElementById("photoCard");
+        const bartekImg = document.getElementById("bartekImg");
+        const photoPlaceholder = document.getElementById("photoPlaceholder");
+        const photoInput = document.getElementById("photoInput");
+        const resetPhotosBtn = document.getElementById("resetPhotosBtn");
+
+        let lastQuoteIdx = 0;
+        let uploadedPhotos = JSON.parse(localStorage.getItem("bartekCustomPhotos") || "[]");
+        let activeRepoIndex = 0;
+        let activeUploadedIndex = 0;
+
+        function getRandomText() {
+            if (TEXTS.length === 1) return TEXTS[0];
+            let idx = Math.floor(Math.random() * TEXTS.length);
+            if (idx === lastQuoteIdx) {
+                idx = (idx + 1) % TEXTS.length;
+            }
+            lastQuoteIdx = idx;
+            return TEXTS[idx];
+        }
+
+        function showNextQuote() {
+            quoteText.textContent = getRandomText();
+            quoteText.classList.remove("pop-in");
+            void quoteText.offsetWidth;
+            quoteText.classList.add("pop-in");
+        }
+
+        function renderPhoto() {
+            if (uploadedPhotos.length > 0) {
+                bartekImg.src = uploadedPhotos[activeUploadedIndex % uploadedPhotos.length];
+                bartekImg.classList.remove("hidden");
+                photoPlaceholder.classList.add("hidden");
+                return;
+            }
+            if (REPO_PHOTOS.length > 0) {
+                bartekImg.src = REPO_PHOTOS[activeRepoIndex % REPO_PHOTOS.length];
+            }
+        }
+
+        bartekImg.addEventListener("load", () => {
+            bartekImg.classList.remove("hidden");
+            photoPlaceholder.classList.add("hidden");
+        });
+
+        bartekImg.addEventListener("error", () => {
+            if (uploadedPhotos.length === 0) {
+                bartekImg.classList.add("hidden");
+                photoPlaceholder.classList.remove("hidden");
+            }
+        });
+
+        function handleCardClick() {
+            if (uploadedPhotos.length > 0) {
+                activeUploadedIndex = (activeUploadedIndex + 1) % uploadedPhotos.length;
+                renderPhoto();
+            } else if (REPO_PHOTOS.length > 1) {
+                activeRepoIndex = (activeRepoIndex + 1) % REPO_PHOTOS.length;
+                renderPhoto();
+            }
+            showNextQuote();
+        }
+
+        photoInput.addEventListener("change", (e) => {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+
+            Promise.all(
+                files.slice(0, 8).map(file => new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                }))
+            ).then((dataUrls) => {
+                uploadedPhotos = [...uploadedPhotos, ...dataUrls].slice(0, 12);
+                try {
+                    localStorage.setItem("bartekCustomPhotos", JSON.stringify(uploadedPhotos));
+                } catch (_) {}
+                activeUploadedIndex = 0;
+                renderPhoto();
+                showNextQuote();
+            });
+        });
+
+        resetPhotosBtn.addEventListener("click", () => {
+            uploadedPhotos = [];
+            activeRepoIndex = 0;
+            localStorage.removeItem("bartekCustomPhotos");
+            bartekImg.classList.add("hidden");
+            photoPlaceholder.classList.remove("hidden");
+            renderPhoto();
+        });
+
+        quoteBox.addEventListener("click", showNextQuote);
+        nextQuoteBtn.addEventListener("click", showNextQuote);
+        photoCard.addEventListener("click", handleCardClick);
+
+        renderPhoto();
+    </script>
+</body>
+</html>
