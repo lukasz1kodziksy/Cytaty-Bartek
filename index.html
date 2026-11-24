@@ -2,8 +2,8 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bartek — Teksty i Spotify</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wciśnij Bartka Jeśli... — 50 Poziomów</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,76 +11,189 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top, #1e1b4b, #09090b 70%);
+            background: radial-gradient(circle at top, #1e1b4b 0%, #09090b 72%);
             min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
-        .glass {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(16px);
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
             border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.75);
         }
-        .pop-in {
-            animation: popIn 0.25s ease-out;
+
+        /* Animacje komunikatu powyżej zdjęcia */
+        .prompt-enter {
+            animation: promptSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
-        @keyframes popIn {
-            from { opacity: 0; transform: translateY(6px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+        @keyframes promptSlideIn {
+            0% { opacity: 0; transform: translateY(-14px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .prompt-pulse {
+            animation: promptUrgent 0.6s infinite alternate ease-in-out;
+        }
+        @keyframes promptUrgent {
+            from { transform: scale(1); }
+            to { transform: scale(1.03); }
+        }
+
+        /* Animacje zdjęcia-przycisku */
+        .photo-btn {
+            transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .photo-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 36px rgba(251, 191, 36, 0.45);
+        }
+        .photo-btn:active, .photo-squish {
+            animation: squishTap 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes squishTap {
+            0% { transform: scale(1); }
+            35% { transform: scale(0.88, 0.92) rotate(-2deg); }
+            70% { transform: scale(1.06, 1.03) rotate(1.5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .photo-win {
+            animation: winBounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-color: #22c55e !important;
+            box-shadow: 0 0 45px rgba(34, 197, 94, 0.75) !important;
+        }
+        @keyframes winBounce {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.14) rotate(-4deg); }
+            60% { transform: scale(0.96) rotate(3deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .photo-fail {
+            animation: failShake 0.45s ease-in-out;
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 45px rgba(239, 68, 68, 0.8) !important;
+        }
+        @keyframes failShake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-14px) rotate(-4deg); }
+            40% { transform: translateX(14px) rotate(4deg); }
+            60% { transform: translateX(-10px) rotate(-2deg); }
+            80% { transform: translateX(10px) rotate(2deg); }
+        }
+
+        /* Fala uderzeniowa po kliknięciu w zdjęcie */
+        .ripple-ring {
+            position: absolute;
+            border-radius: 9999px;
+            border: 3px solid rgba(251, 191, 36, 0.9);
+            pointer-events: none;
+            animation: rippleExpand 0.55s ease-out forwards;
+        }
+        @keyframes rippleExpand {
+            0% { width: 20px; height: 20px; opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+            100% { width: 260px; height: 260px; opacity: 0; transform: translate(-50%, -50%) scale(1.3); }
+        }
+
+        /* Latające cząsteczki emotek po kliknięciu */
+        .float-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 60;
+            font-size: 22px;
+            animation: particleFly 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes particleFly {
+            0% { opacity: 1; transform: translate(0, 0) scale(0.7) rotate(0deg); }
+            100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.35) rotate(var(--rot)); }
         }
     </style>
 </head>
-<body class="text-white flex items-center justify-center p-4">
-    <main class="glass w-full max-w-xl rounded-3xl p-6 sm:p-8 text-center shadow-2xl space-y-6">
-        <div>
-            <h1 class="text-2xl sm:text-4xl font-black tracking-tight text-amber-300">
-                Bartek — Losowanie Tekstów 🦇
+<body class="text-white flex flex-col items-center justify-center p-3 sm:p-5">
+
+    <main class="glass-card w-full max-w-lg rounded-3xl p-5 sm:p-7 text-center relative overflow-hidden space-y-4">
+        
+        <!-- Górny pasek stanu gry -->
+        <div class="flex items-center justify-between gap-2 text-xs font-extrabold">
+            <div class="px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-400/35 text-amber-300">
+                POZIOM <span id="levelNum">1</span> / 50
+            </div>
+            <div id="categoryBadge" class="px-3 py-1.5 rounded-xl bg-white/10 text-zinc-200 truncate">
+                🚒 Studia Strażackie
+            </div>
+            <div id="livesBox" class="px-3 py-1.5 rounded-xl bg-rose-500/15 border border-rose-400/35 text-rose-300">
+                ❤️❤️❤️
+            </div>
+        </div>
+
+        <!-- Pasek postępu czasu / poziomu -->
+        <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden border border-white/10">
+            <div id="timerBar" class="h-full bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 transition-all duration-75" style="width: 100%"></div>
+        </div>
+
+        <!-- KOMUNIKAT POWYŻEJ ZDJĘCIA -->
+        <div id="promptContainer" class="min-h-[118px] rounded-2xl bg-slate-950/80 border-2 border-amber-400/40 p-4 flex flex-col items-center justify-center shadow-inner relative">
+            <span id="ruleTag" class="text-[11px] uppercase tracking-widest font-black text-amber-400 mb-1">
+                ZASADA POZIOMU
+            </span>
+            <h1 id="promptText" class="text-lg sm:text-xl font-black text-white leading-snug prompt-enter">
+                Wciśnij zdjęcie, jeśli Bartek gasi pożar szybciej niż sesję na studiach!
             </h1>
-            <p class="text-xs sm:text-sm text-zinc-300 mt-1">
-                Kliknij kartę lub zdjęcie, żeby wylosować kolejny tekst
+            <p id="subHint" class="text-xs text-zinc-400 mt-1.5 font-semibold">
+                Kliknij zdjęcie poniżej, aby potwierdzić!
             </p>
         </div>
 
-        <!-- Podgląd zdjęcia (plik file_0000000008688210bb3ccbe21599ad09.png obok index.html lub wybrane z dysku) -->
-        <div class="space-y-3">
-            <div id="photoCard" class="relative mx-auto w-56 h-56 sm:w-64 sm:h-64 rounded-2xl overflow-hidden border-2 border-amber-400/60 bg-slate-900 flex items-center justify-center cursor-pointer shadow-lg transition-transform active:scale-95">
-                <img id="bartekImg" src="file_0000000008688210bb3ccbe21599ad09.png" alt="Bartek" class="w-full h-full object-cover hidden">
-                <div id="photoPlaceholder" class="p-4 text-center space-y-1">
-                    <div class="text-4xl">🦇</div>
-                    <div class="text-xs font-bold text-amber-200">Brak pliku file_0000000008688210bb3ccbe21599ad09.png</div>
-                    <div class="text-[11px] text-zinc-400">Kliknij tutaj, aby wylosować tekst albo dodaj własne zdjęcia niżej</div>
+        <!-- ZDJĘCIE ZAMIAST PRZYCISKU -->
+        <div class="py-1 flex flex-col items-center justify-center">
+            <div id="photoButton" role="button" tabindex="0" aria-label="Wciśnij zdjęcie Bartka"
+                 class="photo-btn relative w-56 h-56 sm:w-64 sm:h-64 rounded-3xl overflow-hidden border-4 border-amber-400 bg-slate-900 cursor-pointer shadow-2xl flex items-center justify-center">
+                
+                <img id="bartekPhoto"
+                     src="file_0000000008688210bb3ccbe21599ad09.png"
+                     alt="Bartek"
+                     class="w-full h-full object-cover pointer-events-none">
+
+                <!-- Fallback gdyby plik nie był jeszcze wrzucony -->
+                <div id="photoFallback" class="hidden p-4 text-center space-y-1 pointer-events-none">
+                    <div class="text-5xl">🦇🚒</div>
+                    <div class="text-xs font-black text-amber-300">WCIŚNIJ MNIE!</div>
+                    <div class="text-[10px] text-zinc-400">Brak pliku file_0000000008688210bb3ccbe21599ad09.png</div>
+                </div>
+
+                <!-- Licznik kliknięć dla poziomów wieloklikowych -->
+                <div id="tapCounterBadge" class="hidden absolute top-3 right-3 px-3 py-1 rounded-full bg-black/80 border border-amber-400 text-amber-300 font-black text-sm pointer-events-none">
+                    0 / 5
+                </div>
+
+                <!-- Nakładka statusu po zaliczeniu lub błędzie -->
+                <div id="statusOverlay" class="hidden absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center p-3 pointer-events-none">
+                    <span id="statusEmoji" class="text-5xl mb-1">✅</span>
+                    <span id="statusLabel" class="text-sm font-black uppercase tracking-wider text-white">ZALICZONE!</span>
                 </div>
             </div>
-
-            <div class="flex items-center justify-center gap-2">
-                <label class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-xs font-semibold cursor-pointer transition">
-                    📷 Dodaj zdjęcia z urządzenia
-                    <input id="photoInput" type="file" accept="image/*" multiple class="hidden">
-                </label>
-                <button id="resetPhotosBtn" type="button" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 cursor-pointer transition">
-                    Wyczyść
-                </button>
-            </div>
         </div>
 
-        <!-- Tekst wyświetlany po kliknięciu -->
-        <div id="quoteBox" class="rounded-2xl bg-slate-950/65 border border-amber-400/30 p-5 min-h-[96px] flex items-center justify-center cursor-pointer transition hover:border-amber-400/70">
-            <p id="quoteText" class="text-base sm:text-lg font-bold text-amber-100 pop-in">
-                „W dzień strażak, w nocy Batman, a na studiach legenda!” 🚒🦇
-            </p>
+        <!-- Komentarz po rundzie / pasek sterowania -->
+        <div class="flex items-center justify-between gap-2 text-xs text-zinc-400 px-1">
+            <span id="feedbackComment" class="font-semibold text-amber-200/90 truncate">
+                Gotowy? Wciśnij zdjęcie!
+            </span>
+            <button id="restartAllBtn" type="button" class="shrink-0 px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 text-zinc-300 font-bold cursor-pointer">
+                Od nowa ↻
+            </button>
         </div>
 
-        <button id="nextQuoteBtn" type="button" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-sm shadow-lg cursor-pointer transition active:scale-[0.99]">
-            Losuj kolejny tekst 🎲
-        </button>
-
-        <!-- Odtwarzacz Spotify — podmień ID utworu/playlisty w src na swój -->
-        <div class="pt-2 border-t border-white/10 text-left">
-            <p class="text-[11px] uppercase tracking-wider text-zinc-400 font-semibold mb-2">
-                Muzyka ze Spotify
-            </p>
+        <!-- PLAYLista ZE SPOTIFY NA DOLE -->
+        <div class="pt-3 border-t border-white/10 text-left">
             <iframe
-                id="spotifyFrame"
+                id="spotifyEmbed"
                 style="border-radius:12px"
-                src="https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT?utm_source=generator&theme=0"
+                src="https://open.spotify.com/embed/playlist/1PrN7CPnzZJOjZZczQDSeF?utm_source=generator&theme=0"
                 width="100%"
                 height="152"
                 frameBorder="0"
@@ -91,124 +204,355 @@
         </div>
     </main>
 
+    <!-- Ekran końcowy po 50 poziomach lub utracie żyć -->
+    <div id="endModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+        <div class="glass-card max-w-md w-full rounded-3xl p-7 text-center border-2 border-amber-400 space-y-4">
+            <div id="endEmoji" class="text-6xl">🏆🦇🚒</div>
+            <h2 id="endTitle" class="text-2xl sm:text-3xl font-black text-amber-300">
+                Ukończyłeś 50 poziomów!
+            </h2>
+            <p id="endDesc" class="text-sm text-zinc-200 leading-relaxed">
+                Bartek obronił studia strażackie, schłodził kompa i pokonał wszystkie brzozy w Gotham!
+            </p>
+            <button id="playAgainBtn" type="button" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black font-black text-sm shadow-lg cursor-pointer">
+                Zagraj ponownie od Poziomu 1 🔁
+            </button>
+        </div>
+    </div>
+
     <script>
-        const TEXTS = [
-            "„W dzień strażak, w nocy Batman, a na studiach legenda!” 🚒🦇",
-            "„Komp Bartka ciągnie Arkham Knighta na Ultra i ogrzewa pół osiedla!” 🖥️🔥",
-            "„Strażak Bartek gasi pożary szybciej niż sesję egzaminacyjną!” 🧯🎓",
-            "„Jak Bartek odpala swojego kompa, w elektrowni biją brawo!” ⚡💻",
-            "„Batman ma Batmobil, a Bartek wóz strażacki i potężnego PC-ta!” 🚒🦇",
-            "„Chłodzenie w kompie Bartka chodzi ciszej niż Batman w Gotham!” ❄️🦇",
-            "„Sesja na studiach? Dla strażaka z Arkham to zwykła rozgrzewka!” 📚💪",
-            "„Jedyny przeciwnik, przed którym Batman ma wyzwanie: Rafał Brzózka!” 🌳🤧",
-            "„Bartek ma w pasie taktycznym Batwingi, hak i żelazną kondycję!” 🦇💪",
-            "„Po każdej udanej akcji w Gotham najlepsza jest świeża bułka!” 🥖😎",
-            "„Nienawidzę brzóz — dobrze, że w końcu wylądował w doniczce!” 🪴🦇"
+        const LEVELS = [
+            { cat: "🚒 Studia Strażackie", type: "tap", time: 5000, text: "Wciśnij zdjęcie, jeśli Bartek gasi pożar szybciej niż sesję na studiach!", ok: "Syrena zawyła! Pożar i egzamin ugaszone." },
+            { cat: "🖥️ Komp Bartka", type: "tap", time: 4800, text: "Wciśnij zdjęcie, jeśli komputer Bartka ciągnie gry na Ultra i ogrzewa pół bloku!", ok: "Wentylatory na 100%, temperatura w normie!" },
+            { cat: "🦇 Batman z Gotham", type: "tap", time: 4600, text: "Wciśnij zdjęcie, jeśli w dzień Bartek jest strażakiem, a w nocy Batmanem!", ok: "Bat-sygnał odebrany!" },
+            { cat: "🌳 Pułapka Brzózki", type: "wait", time: 3600, text: "NIE WCISKAJ zdjęcia, jeśli widzisz pyłek brzozy! Czekaj spokojnie...", ok: "Uff! Zero kichania, pułapka ominięta." },
+            { cat: "🚒 Wóz Bojowy", type: "multi", taps: 5, time: 4500, text: "Wciśnij zdjęcie 5 razy, żeby odpalić syrenę w wozie strażackim!", ok: "I-O-I-O! Droga wolna!" },
+            { cat: "🖥️ Chłodzenie Wodne", type: "tap", time: 4400, text: "Wciśnij zdjęcie, jeśli chłodzenie w kompie Bartka jest cichsze niż peleryna Batmana!", ok: "Chłodno i cicho jak w Jaskini Batmana!" },
+            { cat: "🎓 Kolokwium", type: "tap", time: 4300, text: "Wciśnij zdjęcie, jeśli Bartek wchodzi na kolokwium z taktyki pożarniczej jak do Arkham!", ok: "5.0 w indeksie bez zająknięcia!" },
+            { cat: "🦇 Pas Taktyczny", type: "multi", taps: 6, time: 4600, text: "Wciśnij zdjęcie 6 razy, żeby naładować wyrzutnię Batwingów!", ok: "Batwingi uzbrojone!" },
+            { cat: "🖥️ Elektrownia", type: "wait", time: 3500, text: "STOP! NIE wciskaj zdjęcia — Bartek właśnie odpala render na kompie, nie przerywaj!", ok: "Render przeszedł bez zawiechy!" },
+            { cat: "🚒 Egzamin Praktyczny", type: "window", waitBefore: 1800, time: 4500, text: "Czekaj na rozkaz dowódcy... Wciśnij dopiero gdy zrobi się ZIELONO!", greenText: "TERAZ! ROZWIJAJ WĄŻ STRAŻACKI!", ok: "Błyskawiczna reakcja na poligonie!" },
+
+            { cat: "🎓 Wykład o 8:00", type: "tap", time: 4000, text: "Wciśnij zdjęcie, jeśli Bartek wstaje na wykład o 8:00 szybciej niż na alarm w remizie!", ok: "Obecność odhaczona!" },
+            { cat: "🖥️ Karta Graficzna", type: "multi", taps: 8, time: 4800, text: "Wciśnij zdjęcie 8 razy, żeby podkręcić FPS-y w Arkham Knight!", ok: "240 FPS-ów osiągnięte!" },
+            { cat: "🦇 Zmyłka Jokera", type: "wait", time: 3600, text: "ZMYŁKA! NIE wciskaj zdjęcia, jeśli to pułapka Rafała Brzózki!", ok: "Nie dałeś się nabrać!" },
+            { cat: "🚒 Hydrant", type: "tap", time: 3900, text: "Wciśnij zdjęcie, jeśli Bartek znajduje hydrant nawet z zamkniętymi oczami!", ok: "Ciśnienie w wężu idealne!" },
+            { cat: "🖥️ Kabel HDMI", type: "tap", time: 3800, text: "Wciśnij zdjęcie, jeśli komp Bartka ma więcej RGB niż cały Times Square!", ok: "Świeci aż miło!" },
+            { cat: "🦇 Batmobil vs Wóz", type: "multi", taps: 7, time: 4400, text: "Wciśnij 7 razy, żeby przełączyć Batmobil w tryb wozu strażackiego!", ok: "Tryb bojowy aktywny!" },
+            { cat: "🎓 Notatki", type: "wait", time: 3400, text: "NIE wciskaj! Bartek właśnie przepisuje wykład z BHP i chemii spalania.", ok: "Notatki kompletne!" },
+            { cat: "🖥️ Bluescreen", type: "window", waitBefore: 2000, time: 4600, text: "Czekaj aż przejdzie aktualizacja Windowsa... Wciśnij na ZIELONYM!", greenText: "PULPIT ZAŁADOWANY! WCIŚNIJ TERAZ!", ok: "Zero bluescreena!" },
+            { cat: "🚒 Hełm Strażacki", type: "tap", time: 3700, text: "Wciśnij zdjęcie, jeśli hełm strażacki pasuje Bartkowi równie dobrze jak maska Batmana!", ok: "Pełna ochrona głowy!" },
+            { cat: "🦇 Rafał Brzózka", type: "multi", taps: 10, time: 5000, text: "BOSS! Wciśnij zdjęcie 10 razy, żeby zamknąć Rafała Brzózkę w doniczce!", ok: "Brzózka w doniczce! Gotham bezpieczne!" },
+
+            { cat: "🎓 Sesja Zimowa", type: "tap", time: 3600, text: "Wciśnij zdjęcie, jeśli sesja zimowa boi się Bartka bardziej niż złoczyńcy z Gotham!", ok: "Wszystko zaliczone w pierwszym terminie!" },
+            { cat: "🖥️ Zasilacz 1000W", type: "wait", time: 3300, text: "NIE wciskaj! Trwa test obciążeniowy zasilacza w kompie Bartka.", ok: "Napięcie stabilne jak skała!" },
+            { cat: "🚒 Drabina SCD-37", type: "multi", taps: 9, time: 4700, text: "Wciśnij 9 razy, żeby wysunąć drabinę strażacką na dach wieżowca Wayne Enterprises!", ok: "Jesteś na dachu Gotham!" },
+            { cat: "🦇 Peleryna", type: "tap", time: 3500, text: "Wciśnij zdjęcie, jeśli peleryna Batmana jest ognioodporna dzięki patentowi ze studiów!", ok: "Atest strażacki przyznany!" },
+            { cat: "🖥️ Dysk SSD", type: "window", waitBefore: 1700, time: 4200, text: "Czekaj na odczyt z dysku NVMe... Wciśnij dopiero na ZIELONO!", greenText: "ZAŁADOWANO W 0.1s! KLIKAJ!", ok: "Prędkość światła!" },
+            { cat: "🎓 Praca Zaliczeniowa", type: "tap", time: 3400, text: "Wciśnij zdjęcie, jeśli Bartek pisze pracę na studia szybciej niż Batman rzuca Batarangiem!", ok: "Wysłane przed deadlinem!" },
+            { cat: "🌳 Alergia Alert", type: "wait", time: 3500, text: "UWAGA! Pyłki w powietrzu — NIE wciskaj zdjęcia przez 3.5 sekundy!", ok: "Maska przeciwpyłowa zadziałała!" },
+            { cat: "🖥️ Pasta Termoprzewodząca", type: "multi", taps: 8, time: 4300, text: "Wciśnij 8 razy, żeby idealnie rozprowadzić pastę na procesorze Bartka!", ok: "-15 stopni na rdzeniach!" },
+            { cat: "🚒 Alarm w Remizie", type: "tap", time: 3300, text: "Wciśnij zdjęcie, jeśli Bartek zakłada mundur bojowy w 15 sekund!", ok: "Gotowy do wyjazdu!" },
+            { cat: "🦇 Skok z Dachu", type: "window", waitBefore: 2100, time: 4600, text: "Ustaw kąt lotu peleryną... Wciśnij na ZIELONYM sygnale!", greenText: "LEĆ BATMANIE! TERAZ!", ok: "Perfekcyjne lądowanie!" },
+
+            { cat: "🎓 Laboratorium Pożarnicze", type: "tap", time: 3200, text: "Wciśnij zdjęcie, jeśli Bartek na laborkach gasi ogień samym wzrokiem Batmana!", ok: "Prowadzący w szoku!" },
+            { cat: "🖥️ Klawiatura Mechaniczna", type: "multi", taps: 11, time: 4800, text: "Wciśnij 11 razy — przetestuj przełączniki mechaniczne w klawiaturze Bartka!", ok: "Klik-klik-klik! Brzmi pięknie!" },
+            { cat: "🦇 Fałszywy Alarm", type: "wait", time: 3200, text: "FAŁSZYWY ALARM! NIE wciskaj zdjęcia, to tylko pingwin z Gotham!", ok: "Zimna krew zachowana!" },
+            { cat: "🚒 Pompa Autopompy", type: "tap", time: 3100, text: "Wciśnij zdjęcie, jeśli Bartek ogarnia obsługę autopompy lepiej niż Alfred Batkomputer!", ok: "Pełna moc strumienia!" },
+            { cat: "🖥️ Monitory x3", type: "tap", time: 3000, text: "Wciśnij zdjęcie, jeśli na jednym monitorze Bartek ma studia, na drugim grę, a na trzecim monitoring Gotham!", ok: "Wielozadaniowość 100%!" },
+            { cat: "🎓 Obrona na 5", type: "multi", taps: 10, time: 4500, text: "Wciśnij 10 razy, żeby zaliczyć wszystkie pytania komisji egzaminacyjnej!", ok: "Komisja bije brawo!" },
+            { cat: "🦇 Cień Nocy", type: "window", waitBefore: 1900, time: 4300, text: "Czekaj w cieniu dachu... Wciśnij dokładnie gdy zaświeci się ZIELONY!", greenText: "ATAK Z ZASKOCZENIA! WCIŚNIJ!", ok: "Czysta robota!" },
+            { cat: "🖥️ Podkręcanie RAM", type: "wait", time: 3100, text: "NIE dotykać! Trwa test stabilności pamięci RAM w kompie Bartka.", ok: "Zero błędów w MemTest!" },
+            { cat: "🚒 Węże W-75", type: "multi", taps: 12, time: 5000, text: "Wciśnij 12 razy, żeby błyskawicznie zwinąć węże po akcji!", ok: "Sprzęt spakowany w rekordowym czasie!" },
+            { cat: "🦇 Świeża Bułka", type: "tap", time: 3000, text: "Wciśnij zdjęcie, jeśli po każdej akcji w Gotham i na uczelni najlepsza jest świeża bułka!", ok: "Energia zregenerowana!" },
+
+            { cat: "🎓 Indeks Bez Poprawek", type: "tap", time: 2900, text: "Wciśnij zdjęcie, jeśli słowo 'poprawka' nie istnieje w słowniku Bartka!", ok: "Czyste konto!" },
+            { cat: "🖥️ Ultra Detale", type: "multi", taps: 12, time: 4800, text: "Wciśnij 12 razy, żeby włączyć Ray Tracing na maksimum w kompie Bartka!", ok: "Grafika lepsza niż rzeczywistość!" },
+            { cat: "🌳 Ostatnia Brzózka", type: "wait", time: 3000, text: "NIE WCISKAJ! Rafał Brzózka próbuje sprowokować Cię ostatnim pyłkiem!", ok: "Całkowita odporność!" },
+            { cat: "🚒 Dowódca Sekcji", type: "window", waitBefore: 1800, time: 4100, text: "Czekaj na sygnał z centrali... Wciśnij na ZIELONO!", greenText: "WYJAZD ALARMOWY! KLIKAJ!", ok: "Wyjazd w 12 sekund!" },
+            { cat: "🦇 Bat-Hak", type: "tap", time: 2800, text: "Wciśnij zdjęcie, jeśli Bartek wchodzi na 4. piętro uczelni szybciej z hakiem niż windą!", ok: "Już pod salą wykładową!" },
+            { cat: "🖥️ Master Race", type: "tap", time: 2750, text: "Wciśnij zdjęcie, jeśli stanowisko komputerowe Bartka mogłoby sterować satelitą!", ok: "Centrum dowodzenia gotowe!" },
+            { cat: "🎓 Legenda Uczelni", type: "multi", taps: 14, time: 5200, text: "Wciśnij 14 razy, żeby zapisać Bartka w złotej księdze studentów strażaków!", ok: "Wpisane złotymi literami!" },
+            { cat: "🦇 Cisza Przed Finałem", type: "wait", time: 2900, text: "NIE wciskaj! Zbierz siły przed finałowym poziomem...", ok: "Skupienie 10/10!" },
+            { cat: "🚒🦇🖥️ Trio Idealne", type: "window", waitBefore: 1600, time: 3900, text: "Strażak + Batman + Potężny Komp... Wciśnij na ZIELONO!", greenText: "TERAZ! ODPAL PEŁNĄ MOC!", ok: "Niesamowity refleks!" },
+            { cat: "🏆 POZIOM 50: FINAŁ", type: "multi", taps: 15, time: 5500, text: "FINAŁ! Wciśnij zdjęcie Bartka 15 razy, żeby odpalić syreny, RGB i fanfary!", ok: "LEGENDARNY WYNIK! 50/50!" }
         ];
 
-        const REPO_PHOTOS = ["file_0000000008688210bb3ccbe21599ad09.png"];
+        const levelNumEl = document.getElementById("levelNum");
+        const categoryBadgeEl = document.getElementById("categoryBadge");
+        const livesBoxEl = document.getElementById("livesBox");
+        const timerBarEl = document.getElementById("timerBar");
+        const promptContainerEl = document.getElementById("promptContainer");
+        const ruleTagEl = document.getElementById("ruleTag");
+        const promptTextEl = document.getElementById("promptText");
+        const subHintEl = document.getElementById("subHint");
+        const photoButtonEl = document.getElementById("photoButton");
+        const bartekPhotoEl = document.getElementById("bartekPhoto");
+        const photoFallbackEl = document.getElementById("photoFallback");
+        const tapCounterBadgeEl = document.getElementById("tapCounterBadge");
+        const statusOverlayEl = document.getElementById("statusOverlay");
+        const statusEmojiEl = document.getElementById("statusEmoji");
+        const statusLabelEl = document.getElementById("statusLabel");
+        const feedbackCommentEl = document.getElementById("feedbackComment");
+        const restartAllBtn = document.getElementById("restartAllBtn");
 
-        const quoteBox = document.getElementById("quoteBox");
-        const quoteText = document.getElementById("quoteText");
-        const nextQuoteBtn = document.getElementById("nextQuoteBtn");
-        const photoCard = document.getElementById("photoCard");
-        const bartekImg = document.getElementById("bartekImg");
-        const photoPlaceholder = document.getElementById("photoPlaceholder");
-        const photoInput = document.getElementById("photoInput");
-        const resetPhotosBtn = document.getElementById("resetPhotosBtn");
+        const endModalEl = document.getElementById("endModal");
+        const endEmojiEl = document.getElementById("endEmoji");
+        const endTitleEl = document.getElementById("endTitle");
+        const endDescEl = document.getElementById("endDesc");
+        const playAgainBtn = document.getElementById("playAgainBtn");
 
-        let lastQuoteIdx = 0;
-        let uploadedPhotos = JSON.parse(localStorage.getItem("bartekCustomPhotos") || "[]");
-        let activeRepoIndex = 0;
-        let activeUploadedIndex = 0;
+        bartekPhotoEl.addEventListener("error", () => {
+            bartekPhotoEl.classList.add("hidden");
+            photoFallbackEl.classList.remove("hidden");
+        });
 
-        function getRandomText() {
-            if (TEXTS.length === 1) return TEXTS[0];
-            let idx = Math.floor(Math.random() * TEXTS.length);
-            if (idx === lastQuoteIdx) {
-                idx = (idx + 1) % TEXTS.length;
+        let currentLevelIdx = 0;
+        let lives = 3;
+        let tapsDone = 0;
+        let roundLocked = false;
+        let isGreenReady = false;
+        let roundStartTime = 0;
+        let roundDuration = 4000;
+        let rafId = null;
+        let nextLevelTimeout = null;
+
+        function updateLivesUI() {
+            livesBoxEl.textContent = lives <= 0 ? "💔 0" : "❤️".repeat(lives);
+        }
+
+        function spawnParticles(x, y, emojis) {
+            for (let i = 0; i < 8; i++) {
+                const span = document.createElement("span");
+                span.className = "float-particle";
+                span.textContent = emojis[i % emojis.length];
+                span.style.left = `${x}px`;
+                span.style.top = `${y}px`;
+                const angle = (Math.PI * 2 * i) / 8 + (Math.random() - 0.5) * 0.4;
+                const dist = 65 + Math.random() * 65;
+                span.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
+                span.style.setProperty("--dy", `${Math.sin(angle) * dist - 25}px`);
+                span.style.setProperty("--rot", `${(Math.random() - 0.5) * 90}deg`);
+                document.body.appendChild(span);
+                setTimeout(() => span.remove(), 860);
             }
-            lastQuoteIdx = idx;
-            return TEXTS[idx];
         }
 
-        function showNextQuote() {
-            quoteText.textContent = getRandomText();
-            quoteText.classList.remove("pop-in");
-            void quoteText.offsetWidth;
-            quoteText.classList.add("pop-in");
+        function spawnRipple(clientX, clientY) {
+            const rect = photoButtonEl.getBoundingClientRect();
+            const ring = document.createElement("div");
+            ring.className = "ripple-ring";
+            ring.style.left = `${clientX - rect.left}px`;
+            ring.style.top = `${clientY - rect.top}px`;
+            photoButtonEl.appendChild(ring);
+            setTimeout(() => ring.remove(), 560);
         }
 
-        function renderPhoto() {
-            if (uploadedPhotos.length > 0) {
-                bartekImg.src = uploadedPhotos[activeUploadedIndex % uploadedPhotos.length];
-                bartekImg.classList.remove("hidden");
-                photoPlaceholder.classList.add("hidden");
+        function loadLevel(idx) {
+            clearTimeout(nextLevelTimeout);
+            cancelAnimationFrame(rafId);
+
+            if (idx >= LEVELS.length) {
+                showEndModal(true);
                 return;
             }
-            if (REPO_PHOTOS.length > 0) {
-                bartekImg.src = REPO_PHOTOS[activeRepoIndex % REPO_PHOTOS.length];
+
+            currentLevelIdx = idx;
+            const lvl = LEVELS[idx];
+            tapsDone = 0;
+            roundLocked = false;
+            isGreenReady = false;
+            roundStartTime = performance.now();
+            roundDuration = lvl.time;
+
+            levelNumEl.textContent = idx + 1;
+            categoryBadgeEl.textContent = lvl.cat;
+            updateLivesUI();
+
+            photoButtonEl.classList.remove("photo-win", "photo-fail", "photo-squish");
+            statusOverlayEl.classList.add("hidden");
+            promptContainerEl.className = "min-h-[118px] rounded-2xl bg-slate-950/80 border-2 border-amber-400/40 p-4 flex flex-col items-center justify-center shadow-inner relative";
+            promptTextEl.classList.remove("prompt-enter", "prompt-pulse");
+            void promptTextEl.offsetWidth;
+            promptTextEl.classList.add("prompt-enter");
+
+            promptTextEl.textContent = lvl.text;
+
+            if (lvl.type === "tap") {
+                ruleTagEl.textContent = "⚡ WCIŚNIJ ZDJĘCIE";
+                ruleTagEl.className = "text-[11px] uppercase tracking-widest font-black text-amber-400 mb-1";
+                subHintEl.textContent = "Kliknij zdjęcie przed końcem czasu!";
+                tapCounterBadgeEl.classList.add("hidden");
+            } else if (lvl.type === "wait") {
+                ruleTagEl.textContent = "🛑 NIE WCISKAJ!";
+                ruleTagEl.className = "text-[11px] uppercase tracking-widest font-black text-rose-400 mb-1";
+                promptContainerEl.classList.replace("border-amber-400/40", "border-rose-500/50");
+                subHintEl.textContent = "Ręce precz od zdjęcia aż pasek zejdzie do zera!";
+                tapCounterBadgeEl.classList.add("hidden");
+            } else if (lvl.type === "multi") {
+                ruleTagEl.textContent = `🔥 SZYBKIE KLIKANIE (${lvl.taps}x)`;
+                ruleTagEl.className = "text-[11px] uppercase tracking-widest font-black text-sky-400 mb-1";
+                promptContainerEl.classList.replace("border-amber-400/40", "border-sky-400/50");
+                subHintEl.textContent = `Wciśnij zdjęcie ${lvl.taps} razy!`;
+                tapCounterBadgeEl.textContent = `0 / ${lvl.taps}`;
+                tapCounterBadgeEl.classList.remove("hidden");
+            } else if (lvl.type === "window") {
+                ruleTagEl.textContent = "⏳ CZEKAJ NA SYGNAŁ...";
+                ruleTagEl.className = "text-[11px] uppercase tracking-widest font-black text-purple-300 mb-1";
+                subHintEl.textContent = "Nie klikaj za wcześnie!";
+                tapCounterBadgeEl.classList.add("hidden");
+            }
+
+            runTimerLoop();
+        }
+
+        function runTimerLoop() {
+            function step(now) {
+                if (roundLocked) return;
+                const lvl = LEVELS[currentLevelIdx];
+                const elapsed = now - roundStartTime;
+                const remaining = Math.max(0, roundDuration - elapsed);
+                const pct = (remaining / roundDuration) * 100;
+                timerBarEl.style.width = `${pct}%`;
+
+                if (lvl.type === "window" && !isGreenReady && elapsed >= lvl.waitBefore) {
+                    isGreenReady = true;
+                    ruleTagEl.textContent = "🟢 TERAZ! WCIŚNIJ ZDJĘCIE!";
+                    ruleTagEl.className = "text-[11px] uppercase tracking-widest font-black text-emerald-400 mb-1";
+                    promptContainerEl.className = "min-h-[118px] rounded-2xl bg-emerald-950/80 border-2 border-emerald-400 p-4 flex flex-col items-center justify-center shadow-lg relative";
+                    promptTextEl.textContent = lvl.greenText;
+                    promptTextEl.classList.add("prompt-pulse");
+                    subHintEl.textContent = "Klikaj zdjęcie teraz!";
+                }
+
+                if (remaining <= 0) {
+                    if (lvl.type === "wait") {
+                        completeRound(true, lvl.ok);
+                    } else {
+                        completeRound(false, "Czas minął! Za wolno jak na akcję strażacką.");
+                    }
+                    return;
+                }
+
+                rafId = requestAnimationFrame(step);
+            }
+            rafId = requestAnimationFrame(step);
+        }
+
+        function completeRound(success, message) {
+            if (roundLocked) return;
+            roundLocked = true;
+            cancelAnimationFrame(rafId);
+
+            const rect = photoButtonEl.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+
+            statusOverlayEl.classList.remove("hidden");
+            feedbackCommentEl.textContent = message;
+
+            if (success) {
+                photoButtonEl.classList.add("photo-win");
+                statusEmojiEl.textContent = "✅";
+                statusLabelEl.textContent = "ZALICZONE!";
+                statusLabelEl.className = "text-sm font-black uppercase tracking-wider text-emerald-300";
+                spawnParticles(cx, cy, ["🦇", "🚒", "🔥", "⭐", "💻"]);
+
+                nextLevelTimeout = setTimeout(() => {
+                    loadLevel(currentLevelIdx + 1);
+                }, 950);
+            } else {
+                lives--;
+                updateLivesUI();
+                photoButtonEl.classList.add("photo-fail");
+                statusEmojiEl.textContent = "❌";
+                statusLabelEl.textContent = "BŁĄD!";
+                statusLabelEl.className = "text-sm font-black uppercase tracking-wider text-rose-400";
+                spawnParticles(cx, cy, ["💥", "🌳", "🤧", "⚠️"]);
+
+                if (lives <= 0) {
+                    nextLevelTimeout = setTimeout(() => {
+                        showEndModal(false);
+                    }, 950);
+                } else {
+                    nextLevelTimeout = setTimeout(() => {
+                        loadLevel(currentLevelIdx);
+                    }, 1150);
+                }
             }
         }
 
-        bartekImg.addEventListener("load", () => {
-            bartekImg.classList.remove("hidden");
-            photoPlaceholder.classList.add("hidden");
-        });
+        function handlePhotoPress(e) {
+            if (roundLocked) return;
 
-        bartekImg.addEventListener("error", () => {
-            if (uploadedPhotos.length === 0) {
-                bartekImg.classList.add("hidden");
-                photoPlaceholder.classList.remove("hidden");
-            }
-        });
+            const rect = photoButtonEl.getBoundingClientRect();
+            const clientX = e.clientX || (rect.left + rect.width / 2);
+            const clientY = e.clientY || (rect.top + rect.height / 2);
 
-        function handleCardClick() {
-            if (uploadedPhotos.length > 0) {
-                activeUploadedIndex = (activeUploadedIndex + 1) % uploadedPhotos.length;
-                renderPhoto();
-            } else if (REPO_PHOTOS.length > 1) {
-                activeRepoIndex = (activeRepoIndex + 1) % REPO_PHOTOS.length;
-                renderPhoto();
+            photoButtonEl.classList.remove("photo-squish");
+            void photoButtonEl.offsetWidth;
+            photoButtonEl.classList.add("photo-squish");
+            spawnRipple(clientX, clientY);
+
+            const lvl = LEVELS[currentLevelIdx];
+
+            if (lvl.type === "tap") {
+                completeRound(true, lvl.ok);
+            } else if (lvl.type === "wait") {
+                completeRound(false, "Miałeś NIE wciskać! Wpadłeś w pułapkę!");
+            } else if (lvl.type === "window") {
+                if (isGreenReady) {
+                    completeRound(true, lvl.ok);
+                } else {
+                    completeRound(false, "Za wcześnie! Nie było jeszcze zielonego sygnału!");
+                }
+            } else if (lvl.type === "multi") {
+                tapsDone++;
+                tapCounterBadgeEl.textContent = `${tapsDone} / ${lvl.taps}`;
+                spawnParticles(clientX, clientY, ["⚡", "🔥", "🦇"]);
+                if (tapsDone >= lvl.taps) {
+                    completeRound(true, lvl.ok);
+                }
             }
-            showNextQuote();
         }
 
-        photoInput.addEventListener("change", (e) => {
-            const files = Array.from(e.target.files || []);
-            if (!files.length) return;
+        function showEndModal(won) {
+            endModalEl.classList.remove("hidden");
+            endModalEl.classList.add("flex");
+            if (won) {
+                endEmojiEl.textContent = "🏆🦇🚒🖥️";
+                endTitleEl.textContent = "50/50 POZIOMÓW ZALICZONE!";
+                endDescEl.textContent = "Bartek zdał wszystkie egzaminy strażackie, wycisnął 240 FPS na kompie i uratował Gotham przed brzozami!";
+            } else {
+                endEmojiEl.textContent = "🤧🌳💥";
+                endTitleEl.textContent = `Koniec żyć na Poziomie ${currentLevelIdx + 1}`;
+                endDescEl.textContent = "Pyłki brzozy albo falstart Cię zatrzymały. Spróbuj ponownie — Bartek się nie poddaje!";
+            }
+        }
 
-            Promise.all(
-                files.slice(0, 8).map(file => new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(file);
-                }))
-            ).then((dataUrls) => {
-                uploadedPhotos = [...uploadedPhotos, ...dataUrls].slice(0, 12);
-                try {
-                    localStorage.setItem("bartekCustomPhotos", JSON.stringify(uploadedPhotos));
-                } catch (_) {}
-                activeUploadedIndex = 0;
-                renderPhoto();
-                showNextQuote();
-            });
+        photoButtonEl.addEventListener("pointerdown", handlePhotoPress);
+        photoButtonEl.addEventListener("keydown", (e) => {
+            if (e.code === "Space" || e.code === "Enter") {
+                e.preventDefault();
+                handlePhotoPress(e);
+            }
         });
 
-        resetPhotosBtn.addEventListener("click", () => {
-            uploadedPhotos = [];
-            activeRepoIndex = 0;
-            localStorage.removeItem("bartekCustomPhotos");
-            bartekImg.classList.add("hidden");
-            photoPlaceholder.classList.remove("hidden");
-            renderPhoto();
+        restartAllBtn.addEventListener("click", () => {
+            lives = 3;
+            endModalEl.classList.add("hidden");
+            endModalEl.classList.remove("flex");
+            loadLevel(0);
         });
 
-        quoteBox.addEventListener("click", showNextQuote);
-        nextQuoteBtn.addEventListener("click", showNextQuote);
-        photoCard.addEventListener("click", handleCardClick);
+        playAgainBtn.addEventListener("click", () => {
+            lives = 3;
+            endModalEl.classList.add("hidden");
+            endModalEl.classList.remove("flex");
+            loadLevel(0);
+        });
 
-        renderPhoto();
+        loadLevel(0);
     </script>
 </body>
 </html>
